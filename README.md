@@ -2,7 +2,7 @@
 
 **Your Xiaomi health data, out of the vendor cloud and into standard Android Health Connect — plus an MCP API for your own tools and AI agents.**
 
-**把小米健康云的健康数据取出来，落成**标准 Android Health Connect 数据**，再通过 MCP 交给自己的工具和 AI Agent。**
+**把小米健康云的健康数据取出来，落成标准 Android Health Connect 数据，再通过 MCP 交给自己的工具和 AI Agent。**
 
 > Reads your own **Xiaomi Mi Fitness / 小米运动健康** data (band, scale, sleep) through the Xiaomi health cloud API,
 > writes it as **standard Health Connect records** any Android app can read, and keeps the vendor app's own
