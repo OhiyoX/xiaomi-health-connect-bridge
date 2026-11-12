@@ -1,10 +1,10 @@
 # Xiaomi Health Connect Bridge
 
-**Bring your Xiaomi health data to Health Connect — and make it accessible to your AI tools.**
+**Your Xiaomi health data, in Health Connect and AI — with on-device MCP, no server required.**
 
-Sync health records from Xiaomi Mi Fitness to Android Health Connect, explore your history with MCP-compatible AI assistants, and optionally keep a self-hosted copy. No root or modified Mi Fitness app required.
+Sync supported Xiaomi Mi Fitness records to Android Health Connect and let compatible AI clients query your health history through an MCP server running directly on your Android phone. An optional Docker deployment supports independent server-side access. No root or modified Mi Fitness app required.
 
-**中文：** 将小米运动健康数据同步到 Android Health Connect，并通过 MCP 让 AI 助手查询健康趋势。支持自动同步和可选的自托管服务，无需 Root。
+**中文：** 将小米运动健康数据同步到 Android Health Connect，并通过 MCP 让 AI 助手查询健康趋势。Android App 内置本机 MCP Server，无需 NAS 或 Docker 即可接入兼容的本地 AI 客户端；也支持自动同步与可选的自托管服务，无需 Root。
 
 [English](#english) · [简体中文](#简体中文)
 
@@ -17,14 +17,14 @@ Your Xiaomi wearable tracks your day, but getting those records into other apps 
 - **Android Health Connect:** write supported Xiaomi cloud records in a standard format that other authorized, compatible Android apps can use.
 - **Your AI tools:** ask an MCP-compatible assistant about sleep, heart rate, activity and other supported history without manually exporting spreadsheets.
 
-The optional Docker server lets desktop agents query a self-hosted data store even when your phone is offline.
+**No Docker or NAS needed for MCP:** the Android app itself hosts a local MCP endpoint for compatible clients on the phone. Docker is an optional, separate deployment for server-side workflows. Note that on-device MCP describes where the service runs; fetching new Xiaomi cloud records may still require internet access.
 
 ### What it offers
 
 | Capability | Why it matters |
 | --- | --- |
 | **Health Connect sync** | Bring supported Xiaomi metrics into Android's shared health-data layer. |
-| **AI-ready MCP access** | Query historical measurements and trends from compatible AI clients. |
+| **On-device MCP — no server required** | The Android app hosts its own local MCP endpoint for compatible clients, without Docker or a NAS. |
 | **Automatic sync and backfill** | Keep records current and recover historical data without repeated manual exports. |
 | **Optional self-hosting** | Run a Docker service with local SQLite storage for desktop or remote workflows. |
 | **Access controls** | Configure agent-specific permissions, OAuth 2.1, and audit logging for sensitive data. |
@@ -34,7 +34,7 @@ Supported data paths include heart rate, sleep, activity, body measurements/comp
 
 ### Choose your setup
 
-**Android app — for Health Connect users.** Sync Xiaomi cloud data to Health Connect, export records, and access a local MCP endpoint.
+**Android app — Health Connect + on-device MCP.** Sync supported Xiaomi cloud data to Health Connect, export records, and serve MCP directly on your phone. For a compatible client on the same device, no Docker server is required. The loopback endpoint is not directly reachable from another device.
 
 **Docker server — for desktop AI and self-hosting.** Collect Xiaomi cloud data into SQLite and expose an authenticated MCP endpoint independently of the phone.
 
@@ -51,12 +51,13 @@ Xiaomi wearable / scale
           |
      +----+------------------+
      |                       |
- Android bridge         Docker server
+ Android app            Docker server (optional)
      |                       |
- Health Connect         SQLite + MCP
-     |                       |
- Compatible Android     Desktop AI agents
- health apps            and other MCP clients
+ +---+---------+         SQLite + MCP
+ |             |              |
+Health Connect Local MCP   Desktop AI agents
+ |             |          and other MCP clients
+Android apps   On-device AI clients
 ```
 
 ### Get started
@@ -69,7 +70,7 @@ cd app
 adb install -r build/outputs/apk/debug/app-debug.apk
 ```
 
-Grant the required Health Connect permissions and configure the Xiaomi cloud connection. The phone's local MCP endpoint is `http://127.0.0.1:8765/mcp` (loopback only).
+Grant the required Health Connect permissions and configure the Xiaomi cloud connection. The Android app runs its own MCP server at `http://127.0.0.1:8765/mcp` (loopback only). A compatible MCP client on the same phone can connect without deploying Docker. Loopback is not a LAN endpoint, and obtaining fresh Xiaomi cloud data may still need network access.
 
 **Optional Docker server:**
 
@@ -113,7 +114,7 @@ The Android component is written in Kotlin and exposes local MCP tools for queri
 | 功能 | 用户价值 |
 | --- | --- |
 | **同步到 Health Connect** | 让获得授权、兼容相关数据类型的 Android 应用使用小米健康记录 |
-| **连接 AI 助手** | 查询睡眠、心率、活动等历史数据和变化趋势 |
+| **手机端原生 MCP，无需服务器** | Android App 自带 MCP Server，兼容的同机 AI 客户端可以直接查询健康历史，不必部署 Docker 或 NAS |
 | **自动同步与历史回补** | 减少手动导出，补齐可获取的历史记录 |
 | **可选 Docker 自托管** | 手机离线时，桌面端 Agent 仍可查询服务器已有的数据 |
 | **细粒度权限控制** | 通过 OAuth、独立权限和审计机制管理 Agent 访问 |
@@ -123,7 +124,7 @@ The Android component is written in Kotlin and exposes local MCP tools for queri
 
 ### 两种使用方式
 
-**Android App：** 适合希望将小米健康记录同步到 Health Connect 的用户，同时提供本机 MCP 接口。
+**Android App：Health Connect + 纯本机 MCP 调用。** 手机 App 自带 MCP Server，兼容的同机 AI 客户端可以直接连接，不依赖 Docker、NAS 或外部 MCP 服务。这里的「本机」指 MCP 服务运行位置；首次获取或更新小米云端数据仍可能需要联网。本机回环地址不能直接供其他设备访问。
 
 **Docker Server：** 适合希望在 NAS 或服务器上保存数据、让电脑上的 AI Agent 查询健康历史的用户。
 
@@ -140,11 +141,13 @@ The Android component is written in Kotlin and exposes local MCP tools for queri
            |
      +-----+---------------+
      |                     |
- Android App          Docker Server
+ Android App          Docker Server（可选）
      |                     |
- Health Connect       SQLite + MCP
-     |                     |
- 兼容的 Android App    AI Agent / 脚本
+ +---+---------+       SQLite + MCP
+ |             |            |
+Health Connect 本机 MCP    桌面 AI Agent
+ |             |          / 脚本
+兼容 Android App 同机 AI 客户端
 ```
 
 ### 快速开始
@@ -157,7 +160,7 @@ cd app
 adb install -r build/outputs/apk/debug/app-debug.apk
 ```
 
-安装后需配置小米云端连接并授权 Health Connect。手机本机 MCP 地址为 `http://127.0.0.1:8765/mcp`，仅监听本机回环地址。
+安装后需配置小米云端连接并授权 Health Connect。Android App 自带 MCP Server，地址为 `http://127.0.0.1:8765/mcp`，仅监听本机回环地址。兼容的同机 MCP 客户端可直接调用，无需 Docker；其他设备不能直接通过该回环地址访问。
 
 **可选 Docker 服务：**
 
