@@ -21,7 +21,20 @@ Xiaomi Health Connect Bridge brings your Xiaomi health history into Android Heal
 
 ## See it in action
 
-The most useful demo is a real four-step walkthrough: **Mi Fitness stays in place → data appears in Health Connect → an on-device MCP client queries it → you control the client's permissions.** See the [demo and screenshot capture guide](docs/DEMO.md). Screenshots will be published here once captured from a running build.
+The most useful demo is a real four-step walkthrough: **Mi Fitness stays in place → data appears in Health Connect → an on-device MCP client queries it → you control the client's permissions.** See the [demo and screenshot capture guide](docs/DEMO.md).
+
+<table>
+  <tr>
+    <td align="center" width="50%"><img src="docs/media/health-overview.webp" width="300" alt="hc-bridge data page: heart rate, oxygen saturation and sleep read from Health Connect"><br><sub><b>Health Connect records in the app</b><br>Heart rate, oxygen saturation and sleep.</sub></td>
+    <td align="center" width="50%"><img src="docs/media/health-connect-sync.webp" width="300" alt="Health Connect app access screen: HC Bridge is allowed to read record types"><br><sub><b>Health Connect grants access</b><br>You pick the record types the bridge may read and write.</sub></td>
+  </tr>
+  <tr>
+    <td align="center" width="50%"><img src="docs/media/on-device-mcp.webp" width="300" alt="hc-bridge settings: MCP service running on 127.0.0.1:8765, with last sync status"><br><sub><b>MCP on the phone</b><br>Service on <code>127.0.0.1:8765</code>, next to the sync status.</sub></td>
+    <td align="center" width="50%"><img src="docs/media/permissions.webp" width="300" alt="hc-bridge client key detail: scopes, tool policy, time window and revoke action"><br><sub><b>Per-client permissions</b><br>Scopes, tool policy, time window, revoke.</sub></td>
+  </tr>
+</table>
+
+<sub>Captured from HC Bridge 0.9.0 (build 2026-11-03) on an Android emulator with synthetic Health Connect records. No personal data.</sub>
 
 ## What can you do with it?
 
@@ -140,7 +153,20 @@ Xiaomi Health Connect Bridge 将小米健康记录同步到 Android Health Conne
 
 ### 实际演示
 
-推荐的演示流程：**保留小米运动健康 → 同步到 Health Connect → 手机本机 MCP 查询 → 管理客户端权限**。截图和录屏规范见 [Demo 指南](docs/DEMO.md)。真实运行截图完成后再放入首页，避免将 UI 原型当作实机效果。
+推荐的演示流程：**保留小米运动健康 → 同步到 Health Connect → 手机本机 MCP 查询 → 管理客户端权限**。截图和录屏规范见 [Demo 指南](docs/DEMO.md)。
+
+<table>
+  <tr>
+    <td align="center" width="50%"><img src="docs/media/health-overview.webp" width="300" alt="hc-bridge 数据页：从 Health Connect 读出的心率、血氧与睡眠"><br><sub><b>App 里的 Health Connect 记录</b><br>心率、血氧、睡眠。</sub></td>
+    <td align="center" width="50%"><img src="docs/media/health-connect-sync.webp" width="300" alt="Health Connect 应用授权页：HC Bridge 被允许读取记录类型"><br><sub><b>Health Connect 授权</b><br>读哪些、写哪些记录类型，由你勾选。</sub></td>
+  </tr>
+  <tr>
+    <td align="center" width="50%"><img src="docs/media/on-device-mcp.webp" width="300" alt="hc-bridge 设置页：本机 MCP 服务运行在 127.0.0.1:8765，上方是同步状态"><br><sub><b>手机上的 MCP</b><br><code>127.0.0.1:8765</code>，紧挨着同步状态。</sub></td>
+    <td align="center" width="50%"><img src="docs/media/permissions.webp" width="300" alt="hc-bridge 客户端 key 详情：权限范围、工具策略、时间窗与撤销"><br><sub><b>按客户端授权</b><br>权限范围、工具策略、时间窗、撤销。</sub></td>
+  </tr>
+</table>
+
+<sub>截图来自 HC Bridge 0.9.0（构建 2026-11-03），运行在 Android 模拟器上，记录为合成数据，不含个人信息。</sub>
 
 ### 两种部署方式
 
