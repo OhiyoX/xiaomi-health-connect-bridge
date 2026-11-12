@@ -4,7 +4,7 @@
 
 Xiaomi Health Connect Bridge brings your Xiaomi health history into Android Health Connect and MCP-compatible AI tools — without replacing Mi Fitness, rooting your phone, or running a separate server.
 
-**The Android app includes its own MCP server.** Use it directly with compatible on-device AI clients, or choose the optional Docker server for self-hosted and desktop workflows.
+**The Android app includes its own MCP server.** Use it directly with compatible on-device AI clients, or deploy the optional server for stable, long-running MCP access from remote or cloud-based clients.
 
 [中文介绍](#简体中文) · [Get started](#get-started) · [How it works](#how-it-works)
 
@@ -17,7 +17,7 @@ Xiaomi Health Connect Bridge brings your Xiaomi health history into Android Heal
 | **AI access, right on your phone** | Run MCP directly in the Android app. Ask compatible local AI clients about your sleep, heart rate and activity history — no NAS or Docker required. |
 | **Control who can see what** | Manage client access with authorization, tool-level permissions, approval flows and audit records. |
 | **Sync without manual exports** | Background synchronization and historical backfill keep supported records available for analysis. |
-| **Self-host when you want** | An optional Docker deployment provides its own data store and MCP endpoint for desktop agents and server workflows. |
+| **Always-on remote access** | An optional Docker deployment provides a continuously available MCP service for remote and cloud-based AI clients. You can publish it securely through a reverse proxy or a tunnel such as Cloudflare Tunnel. |
 
 ## See it in action
 
@@ -45,8 +45,8 @@ These are example questions; the answer depends on available records and the too
 | --- | --- |
 | Health Connect sync + **on-device MCP** | Self-hosted health-data store + MCP |
 | Runs on your Android phone | Runs on a NAS or other Docker host |
-| Ideal for Health Connect and local AI clients | Ideal for desktop agents and independent server workflows |
-| **No separate server needed** | Separate deployment, only if you want it |
+| Ideal for Health Connect and on-device AI clients | Ideal for persistent remote access and cloud-based AI clients |
+| **No separate server needed** | Can stay online independently of the phone |
 
 ### How it works
 
@@ -60,7 +60,7 @@ Xiaomi wearable / scale → Mi Fitness → Xiaomi cloud
                  +-------+-------+                         |
                  |               |                     SQLite + MCP
             Health Connect   On-device MCP                   |
-                 |               |                      Desktop AI
+                 |               |                    Remote / cloud AI
           Compatible apps    Local AI clients               clients
 ```
 
@@ -118,7 +118,7 @@ License: [MIT](LICENSE).
 
 Xiaomi Health Connect Bridge 将小米健康记录同步到 Android Health Connect，并通过 MCP 让 AI 助手访问健康历史。无需 Root、不修改官方小米运动健康，也不必改变原有设备配对方式。
 
-**Android App 自带 MCP Server，无需 NAS 或 Docker。** 兼容的同机 AI 客户端可以直接调用；需要桌面端或服务器独立运行时，也可以选择 Docker 版本。
+**Android App 自带 MCP Server，无需 NAS 或 Docker。** 兼容的同机 AI 客户端可以直接调用；需要长期稳定服务、远程调用或云端 AI 接入时，也可以部署 Docker Server。
 
 ### 四个核心卖点
 
@@ -136,7 +136,7 @@ Xiaomi Health Connect Bridge 将小米健康记录同步到 Android Health Conne
 - **跨应用使用健康数据：** 将支持的小米记录写入 Health Connect，供获得授权的兼容应用使用。
 - **用 AI 分析趋势：** 询问「最近两周睡眠时长有什么变化？」「这个月心率趋势如何？」等问题，不必反复手动导出文件。
 - **按客户端授权：** 为不同 AI 客户端分配需要的访问能力，并在管理界面查看授权与访问情况。
-- **按需选择部署方式：** 仅安装 Android App 就能使用 Health Connect 和本机 MCP；需要 NAS 或桌面 Agent 时再部署 Docker。
+- **按需选择部署方式：** 仅安装 Android App 就能使用 Health Connect 和本机 MCP；需要长期在线服务或远程、云端访问时再部署 Docker。
 
 ### 实际演示
 
@@ -146,7 +146,7 @@ Xiaomi Health Connect Bridge 将小米健康记录同步到 Android Health Conne
 
 **Android App（推荐）：** Health Connect 同步 + 本机 MCP Server。手机端直接运行，适合 Android 健康生态和本机 AI 客户端。
 
-**Docker Server（可选）：** 独立采集、存储和 MCP 服务，适合 NAS、桌面 Agent 及自托管工作流。
+**Docker Server（可选）：** 面向长期稳定运行与远程、云端 AI 客户端接入。可部署在 NAS、VPS 或其他 Docker 主机上，通过反向代理或 Cloudflare Tunnel 等方式安全提供公网访问。
 
 架构图和安装命令见上方 [How it works](#how-it-works) 与 [Get started](#get-started)。
 
