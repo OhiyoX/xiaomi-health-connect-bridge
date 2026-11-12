@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 资源键 tag：与 View.setTag(Object) 分开存，避免被别的用途（例如卡片前景色）覆盖。
+     2026-10-18 真 bug：卡片业务键原本存在 View.tag 里，被 tintCard 的 `card.tag = fg` 覆盖，
+     于是长按拖动松手后读不到键 → 顺序静默丢失（拖了但"不生效"）。 -->
+<resources>
+    <item name="tag_reorder_key" type="id" />
+</resources>

@@ -1,0 +1,387 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:clipChildren="false"
+    android:clipToPadding="false"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurface"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:paddingStart="16dp"
+        android:paddingTop="12dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="24dp">
+
+        <TextView
+            android:id="@+id/dataSub"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="本机 Health Connect"
+            android:textAppearance="?attr/textAppearanceBodySmall"
+            android:textColor="?attr/colorOnSurfaceVariant" />
+
+        <id.harness.hcbridge.ReorderLinearLayout
+            android:id="@+id/cardsBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+        <!-- 步数：目标圆环 -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardSteps"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:clickable="true"
+            android:focusable="true"
+            app:cardBackgroundColor="?attr/colorSurfaceContainer"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:strokeWidth="0dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="16dp">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/stepsValue"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="步数 —"
+                        android:textAppearance="?attr/textAppearanceTitleLarge" />
+
+                    <TextView
+                        android:id="@+id/stepsSub"
+                        android:maxLines="2"
+                        android:ellipsize="end"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="—"
+                        android:textAppearance="?attr/textAppearanceBodySmall"
+                        android:textColor="?attr/colorOnSurfaceVariant" />
+                </LinearLayout>
+
+                <id.harness.hcbridge.StepsRingView
+                    android:id="@+id/stepsChart"
+                    android:layout_width="88dp"
+                    android:layout_height="88dp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- 心率：折线（触摸出 tooltip，浮在卡片顶部） -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardHr"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:clickable="true"
+            android:focusable="true"
+            app:cardBackgroundColor="?attr/colorSurfaceContainer"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:strokeWidth="0dp">
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/hrValue"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="心率 —"
+                            android:textAppearance="?attr/textAppearanceTitleLarge" />
+                                            <TextView
+                            android:id="@+id/hrTip"
+                        android:maxWidth="200dp"
+                        android:maxLines="2"
+                        android:ellipsize="end"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/bg_tooltip"
+                            android:paddingStart="8dp"
+                            android:paddingTop="4dp"
+                            android:paddingEnd="8dp"
+                            android:paddingBottom="4dp"
+                            android:textAppearance="?attr/textAppearanceLabelMedium"
+                            android:textColor="@color/md_inverse_on_surface"
+                            android:visibility="invisible" />
+
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/hrSub"
+                        android:maxLines="2"
+                        android:ellipsize="end"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="—"
+                        android:textAppearance="?attr/textAppearanceBodySmall"
+                        android:textColor="?attr/colorOnSurfaceVariant" />
+
+                    <id.harness.hcbridge.HrSparkView
+                        android:id="@+id/hrChart"
+                        android:layout_width="match_parent"
+                        android:layout_height="64dp"
+                        android:layout_marginTop="8dp" />
+                </LinearLayout>
+            </FrameLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- 血氧：点阵 + 90% 基线 -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardSpo2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:clickable="true"
+            android:focusable="true"
+            app:cardBackgroundColor="?attr/colorSurfaceContainer"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:strokeWidth="0dp">
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/spo2Value"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="血氧 —"
+                            android:textAppearance="?attr/textAppearanceTitleLarge" />
+                                            <TextView
+                            android:id="@+id/spo2Tip"
+                        android:maxWidth="200dp"
+                        android:maxLines="2"
+                        android:ellipsize="end"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/bg_tooltip"
+                            android:paddingStart="8dp"
+                            android:paddingTop="4dp"
+                            android:paddingEnd="8dp"
+                            android:paddingBottom="4dp"
+                            android:textAppearance="?attr/textAppearanceLabelMedium"
+                            android:textColor="@color/md_inverse_on_surface"
+                            android:visibility="invisible" />
+
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/spo2Sub"
+                        android:maxLines="2"
+                        android:ellipsize="end"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="—"
+                        android:textAppearance="?attr/textAppearanceBodySmall"
+                        android:textColor="?attr/colorOnSurfaceVariant" />
+
+                    <id.harness.hcbridge.Spo2RangeView
+                        android:id="@+id/spo2Chart"
+                        android:layout_width="match_parent"
+                        android:layout_height="64dp"
+                        android:layout_marginTop="8dp" />
+                </LinearLayout>
+            </FrameLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- 睡眠：时间轴柱 -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardSleep"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:clickable="true"
+            android:focusable="true"
+            app:cardBackgroundColor="?attr/colorSurfaceContainer"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:strokeWidth="0dp">
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/sleepValue"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="睡眠 —"
+                            android:textAppearance="?attr/textAppearanceTitleLarge" />
+                                            <TextView
+                            android:id="@+id/sleepTip"
+                        android:maxWidth="200dp"
+                        android:maxLines="2"
+                        android:ellipsize="end"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/bg_tooltip"
+                            android:paddingStart="8dp"
+                            android:paddingTop="4dp"
+                            android:paddingEnd="8dp"
+                            android:paddingBottom="4dp"
+                            android:textAppearance="?attr/textAppearanceLabelMedium"
+                            android:textColor="@color/md_inverse_on_surface"
+                            android:visibility="invisible" />
+
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/sleepSub"
+                        android:maxLines="2"
+                        android:ellipsize="end"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="—"
+                        android:textAppearance="?attr/textAppearanceBodySmall"
+                        android:textColor="?attr/colorOnSurfaceVariant" />
+
+                    <id.harness.hcbridge.SleepBarsView
+                        android:id="@+id/sleepChart"
+                        android:layout_width="match_parent"
+                        android:layout_height="88dp"
+                        android:layout_marginTop="8dp" />
+                </LinearLayout>
+            </FrameLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- 体成分：稀疏点线（体重/体脂/BMI），点卡进详情 -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardBody"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:clickable="true"
+            android:focusable="true"
+            app:cardBackgroundColor="?attr/colorSurfaceContainer"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:strokeWidth="0dp">
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/bodyValue"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="体成分 —"
+                            android:textAppearance="?attr/textAppearanceTitleLarge" />
+
+                        <TextView
+                            android:id="@+id/bodyTip"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/bg_tooltip"
+                            android:ellipsize="end"
+                            android:maxLines="2"
+                            android:maxWidth="200dp"
+                            android:paddingStart="8dp"
+                            android:paddingTop="4dp"
+                            android:paddingEnd="8dp"
+                            android:paddingBottom="4dp"
+                            android:textAppearance="?attr/textAppearanceLabelMedium"
+                            android:textColor="@color/md_inverse_on_surface"
+                            android:visibility="invisible" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/bodySub"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:ellipsize="end"
+                        android:maxLines="2"
+                        android:text="—"
+                        android:textAppearance="?attr/textAppearanceBodySmall"
+                        android:textColor="?attr/colorOnSurfaceVariant" />
+
+                    <id.harness.hcbridge.BodyTrendView
+                        android:id="@+id/bodyChart"
+                        android:layout_width="match_parent"
+                        android:layout_height="72dp"
+                        android:layout_marginTop="8dp" />
+                </LinearLayout>
+            </FrameLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        </id.harness.hcbridge.ReorderLinearLayout>
+
+    </LinearLayout>
+</ScrollView>

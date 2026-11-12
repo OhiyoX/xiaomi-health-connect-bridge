@@ -1,0 +1,8 @@
+# 统一换行：脚本/源码用 LF（手机上也要能直接跑 gradlew）
+* text=auto eol=lf
+gradlew text eol=lf
+*.sh text eol=lf
+*.bat text eol=crlf
+*.jar binary
+*.apk binary
+*.png binary

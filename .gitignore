@@ -1,0 +1,24 @@
+# Gradle / Android
+.gradle/
+build/
+app/build/
+local.properties
+*.iml
+.idea/
+captures/
+.externalNativeBuild/
+.cxx/
+
+# 本机工具链（不进仓；按 README 自行下载或 git clone）
+gradle-8.13/
+
+# Termux-side scripts (not part of this repository)
+tools/
+
+# Python（deploy/nas 只跑标准库）
+__pycache__/
+*.pyc
+
+# 一次性产物
+*.log
+*.keystore

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 深色模式（手机上默认跟随系统深色） -->
+    <color name="md_primary">#4CDADD</color>
+    <color name="md_on_primary">#00363A</color>
+    <color name="md_primary_container">#004F51</color>
+    <color name="md_on_primary_container">#6FF6F9</color>
+    <color name="md_secondary">#B0CCCD</color>
+    <color name="md_secondary_container">#324B4D</color>
+    <color name="md_on_secondary_container">#CCE8E9</color>
+    <color name="md_tertiary">#B7C7E9</color>
+    <color name="md_surface">#0F1414</color>
+    <color name="md_on_surface">#DDE4E3</color>
+    <color name="md_on_surface_variant">#BEC8C8</color>
+    <color name="md_surface_container">#1A2020</color>
+    <color name="md_surface_container_high">#242A2A</color>
+    <color name="md_surface_variant">#3F4949</color>
+    <color name="md_outline">#899393</color>
+    <color name="md_outline_variant">#3F4949</color>
+    <color name="md_error">#FFB4AB</color>
+    <color name="md_on_error">#690005</color>
+    <color name="md_warning">#FFD08A</color>
+    <color name="md_inverse_surface">#E3E6E8</color>
+    <color name="md_inverse_on_surface">#2B2F31</color>
+</resources>

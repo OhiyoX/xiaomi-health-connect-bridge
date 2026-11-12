@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- Health Connect 数据读取权限（每个数据类型单独授权） -->
+    <uses-permission android:name="android.permission.health.READ_STEPS" />
+    <uses-permission android:name="android.permission.health.READ_DISTANCE" />
+    <uses-permission android:name="android.permission.health.READ_TOTAL_CALORIES_BURNED" />
+    <uses-permission android:name="android.permission.health.READ_ACTIVE_CALORIES_BURNED" />
+    <uses-permission android:name="android.permission.health.READ_HEART_RATE" />
+    <uses-permission android:name="android.permission.health.WRITE_HEART_RATE" />
+    <uses-permission android:name="android.permission.health.WRITE_DISTANCE" />
+    <uses-permission android:name="android.permission.health.WRITE_STEPS" />
+    <uses-permission android:name="android.permission.health.WRITE_OXYGEN_SATURATION" />
+    <uses-permission android:name="android.permission.health.WRITE_SLEEP" />
+    <!-- 体重：小米运动健康不往 HC 写体重（实测 HC 里 weight=0），云里却有 28 次体称记录 -->
+    <uses-permission android:name="android.permission.health.WRITE_WEIGHT" />
+    <!-- 体脂：云 weight 记录里带 body_fat_rate（体称），HC 侧也没有来源 -->
+    <uses-permission android:name="android.permission.health.WRITE_BODY_FAT" />
+    <!-- 写体脂前要读已有记录去重；没有 READ_BODY_FAT 会被 HC 直接拒绝（2026-10-21 实测） -->
+    <uses-permission android:name="android.permission.health.READ_BODY_FAT" />
+    <!-- 活动卡路里补洞（云 calories = 活动消耗；只补 HC 当天为 0 的日子） -->
+    <uses-permission android:name="android.permission.health.WRITE_ACTIVE_CALORIES_BURNED" />
+    <uses-permission android:name="android.permission.health.WRITE_TOTAL_CALORIES_BURNED" />
+    <!-- 后台读 HC 必需：缺它时 aggregate/readRecords 会报 must be in foreground -->
+
+    <!-- 体成分其余维度（小米体秤有数据：基础代谢/骨量/去脂体重/体水分/身高） -->
+    <uses-permission android:name="android.permission.health.WRITE_BASAL_METABOLIC_RATE" />
+    <uses-permission android:name="android.permission.health.READ_BASAL_METABOLIC_RATE" />
+    <uses-permission android:name="android.permission.health.WRITE_BONE_MASS" />
+    <uses-permission android:name="android.permission.health.READ_BONE_MASS" />
+    <uses-permission android:name="android.permission.health.WRITE_LEAN_BODY_MASS" />
+    <uses-permission android:name="android.permission.health.READ_LEAN_BODY_MASS" />
+    <uses-permission android:name="android.permission.health.WRITE_BODY_WATER_MASS" />
+    <uses-permission android:name="android.permission.health.READ_BODY_WATER_MASS" />
+    <uses-permission android:name="android.permission.health.WRITE_HEIGHT" />
+    <uses-permission android:name="android.permission.health.READ_HEIGHT" />
+    <!-- 睡眠夜间的呼吸率与 HRV（小米云 sleep payload 有 avg_breath / avg_hrv） -->
+    <uses-permission android:name="android.permission.health.WRITE_RESPIRATORY_RATE" />
+    <uses-permission android:name="android.permission.health.READ_RESPIRATORY_RATE" />
+    <uses-permission android:name="android.permission.health.WRITE_HEART_RATE_VARIABILITY" />
+    <uses-permission android:name="android.permission.health.READ_HEART_RATE_VARIABILITY" />
+    <uses-permission android:name="android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND" />
+    <!-- 读 **30 天以上** 的历史必需：缺它时 HC 只返回最近 30 天的数据（2026-10-21 踩到：
+         9 月的步数/卡路里/睡眠聚合读出来全是 0，写进去的东西"看不见"，还差点按 0 判断重复写入） -->
+    <uses-permission android:name="android.permission.health.READ_HEALTH_DATA_HISTORY" />
+    <uses-permission android:name="android.permission.health.READ_EXERCISE" />
+    <uses-permission android:name="android.permission.health.READ_SLEEP" />
+    <uses-permission android:name="android.permission.health.READ_OXYGEN_SATURATION" />
+    <uses-permission android:name="android.permission.health.READ_RESPIRATORY_RATE" />
+    <uses-permission android:name="android.permission.health.READ_WEIGHT" />
+
+    <!-- Android 11+ 包可见性：Health Connect 提供方 + 上游（小米运动健康） -->
+    <queries>
+        <package android:name="com.google.android.apps.healthdata" />
+        <package android:name="com.android.healthconnect.controller" />
+        <!-- 主动同步要能判它装没装、要能一键拉起（UpstreamKick / 通知里的“打开小米运动健康”） -->
+        <package android:name="com.mi.health" />
+    </queries>
+
+    <application
+        android:name=".App"
+        android:allowBackup="false"
+        android:label="HC Bridge"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.HCBridge">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTask">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- Health Connect 强制要求：权限用途说明入口（缺了它 HC 会拒绝所有读取） -->
+        <!-- 无界面触发入口（Termux / 看门狗用，不弹窗） -->
+        <receiver
+            android:name=".CmdReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="id.harness.hcbridge.CMD_SYNC" />
+                <action android:name="id.harness.hcbridge.CMD_BOOTSTRAP" />
+                <action android:name="id.harness.hcbridge.CMD_STATUS" />
+            </intent-filter>
+        </receiver>
+
+        <!-- 自带 MCP 服务器（只监听 127.0.0.1:8765） -->
+        <service
+            android:name=".McpService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
+
+        <!-- 自愈入口：权限恢复 / 二维码重登（均在 app 内，一次点击） -->
+        <activity
+            android:name=".FixActivity"
+            android:exported="true"
+            android:label="恢复 HC 权限"
+            android:excludeFromRecents="true" />
+        <activity
+            android:name=".LoginActivity"
+            android:exported="true"
+            android:label="重新登录小米账号"
+            android:excludeFromRecents="true" />
+        <activity
+            android:name=".WebLoginActivity"
+            android:exported="false"
+            android:label="账号密码登录"
+            android:excludeFromRecents="true" />
+
+        <!-- 开机 / 升级后自愈重排 -->
+        <receiver
+            android:name=".BootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+            </intent-filter>
+        </receiver>
+
+        <activity
+            android:name=".RationaleActivity"
+            android:exported="true"
+            android:label="HC Bridge 权限说明">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW_PERMISSION_USAGE" />
+                <category android:name="android.intent.category.HEALTH_PERMISSIONS" />
+            </intent-filter>
+        </activity>
+        <!-- 授权同意页：只由 hcbridge://oauth/consent?req=<id> 深链打开（同意只发生在 app 内） -->
+        <activity
+            android:name=".McpConsentActivity"
+            android:exported="true"
+            android:label="授权请求"
+            android:excludeFromRecents="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:host="oauth"
+                    android:pathPrefix="/consent"
+                    android:scheme="hcbridge" />
+            </intent-filter>
+        </activity>
+
+        <!-- app 内 MCP 管理页（默认）：WebView + 本地共享前端，解锁后才有 JS 桥 -->
+        <activity
+            android:name=".McpWebAdminActivity"
+            android:exported="false"
+            android:label="MCP 管理"
+            android:excludeFromRecents="true" />
+
+        <!-- 原生管理页：隐藏回退（settings.adminUiMode = native 时才进得去） -->
+        <activity
+            android:name=".McpAdminActivity"
+            android:exported="false"
+            android:label="MCP 管理"
+            android:excludeFromRecents="true" />
+
+        <activity
+            android:name=".MetricDetailActivity"
+            android:exported="false"
+            android:theme="@style/Theme.HCBridge" />
+    </application>
+</manifest>
