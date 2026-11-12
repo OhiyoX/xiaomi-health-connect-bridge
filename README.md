@@ -1,8 +1,12 @@
-# hc-bridge
+# hc-bridge — Xiaomi Health Cloud → Health Connect
 
-**Your health data, out of the vendor cloud and into your own tools and AI agents.**
+**Your Xiaomi health data, out of the vendor cloud and into standard Android Health Connect — plus an MCP API for your own tools and AI agents.**
 
-**把健康数据从封闭的厂商云里取回来，交给自己的工具和 AI Agent。**
+**把小米健康云的健康数据取出来，落成**标准 Android Health Connect 数据**，再通过 MCP 交给自己的工具和 AI Agent。**
+
+> Reads your own **Xiaomi Mi Fitness / 小米运动健康** data (band, scale, sleep) through the Xiaomi health cloud API,
+> writes it as **standard Health Connect records** any Android app can read, and keeps the vendor app's own
+> connection untouched. No root, no patched APK, no exported database.
 
 `hc-bridge` is two programs that share one data model and one admin UI:
 
@@ -56,6 +60,12 @@ The two halves are **parallel readers of the same cloud**, not a chain: the serv
 ### The app
 
 An Android app (Kotlin, `minSdk 28`, Health Connect 1.1) that makes Health Connect a first-class citizen on a device whose vendor app cannot be trusted to sync.
+
+**Standard data, automatic sync, and no conflict with Mi Fitness.**
+
+- **Standard Android health data.** Everything the bridge writes is plain Health Connect — `HeartRateRecord`, `SleepSessionRecord` **with stages**, `WeightRecord`, `ExerciseSessionRecord` — with the standard metadata (`recordingMethod`, `Device`, record type) that Android requires. Any app that reads Health Connect (Google Fit, Samsung Health, Strava, your own code) sees the same records as if the vendor app had written them. Nothing is stored in a private format.
+- **Automatic, not manual.** A periodic worker syncs on a schedule, a boot receiver restarts it after a reboot, and the upstream watchdog re-pulls when the cloud has new data. You do not tap anything to keep it current.
+- **The Mi Fitness app keeps working, unchanged.** The bridge never patches, replaces, or reads the vendor app's private storage, and never touches its account or device pairing. When it needs a nudge it only calls services the vendor app already exports (`bind` to its device service, a screen-change broadcast), which is the same thing the system does when you open the app. Both apps then write to Health Connect under their own record origins, so the vendor's own entries stay intact and Health Connect keeps them side by side.
 
 - **Read out**: Health Connect → JSON on shared storage and CSV export, so Termux scripts and agents can read data without any health API.
 - **Write back**: heart rate, **sleep sessions with stages** (deep / light / REM / awake, mapped from the cloud payload and verified against the vendor's own summary fields), weight, workouts.
@@ -196,7 +206,13 @@ MIT. Third-party attribution and disclaimers: [`NOTICE.md`](NOTICE.md).
 
 ### app 做什么
 
-Kotlin 写的 Android 应用（`minSdk 28`，Health Connect 1.1），让 Health Connect 真正属于你：
+Kotlin 写的 Android 应用（`minSdk 28`，Health Connect 1.1），让 Health Connect 真正属于你。
+
+**标准数据、自动同步、不影响小米运动健康。**
+
+- **落的是 Android 标准健康数据**：桥写进去的全是普通 Health Connect 记录 —— 心率、**带分期的睡眠**、体重、运动，字段与元数据（`recordingMethod`、`Device`、记录类型）都按 Android 的要求填。任何读 Health Connect 的应用（Google Fit、三星健康、Strava、你自己的代码）看到的记录，和小米自己写的没有格式差别，不存在私有格式。
+- **自动同步，不用手点**：周期任务按计划同步，开机广播自动拉起，上游看护发现云端有新数据就补拉 —— 保持最新不需要任何手动操作。
+- **小米运动健康照常工作**：不 patch、不替换、不读它的私有存储，也不碰它的账号与设备绑定。需要催的时候只调它自己导出的服务（bind 设备服务、发一次亮屏广播），和系统打开这个 app 时做的事一样。两边各自以自己 app 的身份往 Health Connect 写，小米写的记录原样保留，Health Connect 会把两份并列显示。
 
 - **读出来**：Health Connect → 共享存储上的 JSON + CSV 导出，Termux 脚本和 agent 不用任何健康 API 就能读。
 - **写回去**：心率、**带分期的睡眠**（深睡 / 浅睡 / REM / 清醒，从云端 payload 的 `items[].state` 映射，并拿厂商自己的汇总字段逐项核对过）、体重、运动记录。
