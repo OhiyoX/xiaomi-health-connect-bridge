@@ -1,266 +1,187 @@
-# hc-bridge
+# Xiaomi Health Connect Bridge
 
-### Your Xiaomi band already knows everything about you.  
-### It just won't tell anything else.
+**Bring your Xiaomi health data to Health Connect — and make it accessible to your AI tools.**
 
-**hc-bridge turns Xiaomi health data into standard Android Health Connect data — then hands it to your apps, your scripts and your AI agents through a complete MCP API.**
+Sync health records from Xiaomi Mi Fitness to Android Health Connect, explore your history with MCP-compatible AI assistants, and optionally keep a self-hosted copy. No root or modified Mi Fitness app required.
 
-**把小米手环知道的一切，变成整个 Android 都能用的标准健康数据 —— 再通过完整的 MCP 接口，交给你的应用、脚本和 AI Agent。**
+**中文：** 将小米运动健康数据同步到 Android Health Connect，并通过 MCP 让 AI 助手查询健康趋势。支持自动同步和可选的自托管服务，无需 Root。
 
-No root. No patched APK. No exported database. Mi Fitness keeps working exactly as before.
+[English](#english) · [简体中文](#简体中文)
 
-[English](#english) · [中文](#中文)
+## English
 
----
+### Make more of the health data you already have
 
-# English
+Your Xiaomi wearable tracks your day, but getting those records into other apps or your own workflows can be difficult. Xiaomi Health Connect Bridge gives that data two practical destinations:
 
-## Your health data is yours. Start acting like it.
+- **Android Health Connect:** write supported Xiaomi cloud records in a standard format that other authorized, compatible Android apps can use.
+- **Your AI tools:** ask an MCP-compatible assistant about sleep, heart rate, activity and other supported history without manually exporting spreadsheets.
 
-You wear the band. You step on the scale. You sleep eight hours — or four. It all goes into the Xiaomi cloud, and there it stays: visible in one app, readable by nothing else. Not by Google Health. Not by your laptop. Certainly not by the agent you talk to every day.
+The optional Docker server lets desktop agents query a self-hosted data store even when your phone is offline.
 
-hc-bridge is the two-way door.
+### What it offers
 
-**Out:** everything the Xiaomi cloud holds for your account — heart rate, sleep, body composition, steps and distance, stress, oxygen saturation, workouts — becomes **standard Health Connect records** with the metadata Android expects. The Health app sees them. Samsung Health sees them. Strava sees them. Anything that reads Health Connect sees ordinary health data, written by an app called hc-bridge, sitting side by side with the vendor's own records.
-
-**In:** ask the way you actually ask. *"How has my sleep been this month?" "Is my resting heart rate improving?" "Show me the weeks I walked more than 10 km a day."* Your agent answers from the same data you see — because both of you are reading the same records.
-
-**And it keeps itself current.** Scheduled sync. Restarts after reboot. Reconnects when the vendor app goes quiet. You never open it to keep it working.
-
-## Three promises
-
-### 1. Every bit of your Xiaomi data, used
-
-Not a partial export. Not "steps and heart rate, good luck with the rest." The bridge works the whole surface of the cloud account: cardiac, sleep, body composition, activity, stress, oxygen, workouts — one consistent model, no gaps you have to fill by hand.
-
-### 2. Fully at home in Google Health
-
-Standard records, standard metadata, standard record origins. Health Connect is the contract, and hc-bridge honours all of it — so the data doesn't live in a silo with a nice API on top. It lives where Android expects health data to live, and your other apps inherit it for free.
-
-### 3. An MCP API that is actually complete
-
-Two MCP servers, one data model: **28 tools on the phone**, **10 tools on the server**. Query, export, sync, diagnose, repair. Behind them, a real permission system — not an API key in a config file and a hope.
-
-## A week with hc-bridge
-
-| When | What happens |
+| Capability | Why it matters |
 | --- | --- |
-| **Monday morning** | Your agent reports last night's sleep and the trend over 30 days — read straight from Health Connect records, no screenshots, no manual export. |
-| **Wednesday** | You notice Health shows fewer steps than the band. You ask why. The bridge breaks the number down by source instead of guessing. |
-| **Friday** | The phone is in another room, off. Your desktop agent still answers from the self-hosted server, which pulls the same cloud on its own schedule. |
-| **Sunday** | A new app wants your workouts. It asks Health Connect, gets standard records, works immediately. You changed nothing. |
+| **Health Connect sync** | Bring supported Xiaomi metrics into Android's shared health-data layer. |
+| **AI-ready MCP access** | Query historical measurements and trends from compatible AI clients. |
+| **Automatic sync and backfill** | Keep records current and recover historical data without repeated manual exports. |
+| **Optional self-hosting** | Run a Docker service with local SQLite storage for desktop or remote workflows. |
+| **Access controls** | Configure agent-specific permissions, OAuth 2.1, and audit logging for sensitive data. |
+| **No root required** | Keep the official Mi Fitness app and device pairing intact. |
 
-## How it works
+Supported data paths include heart rate, sleep, activity, body measurements/composition, stress, oxygen saturation and workouts. **Coverage varies by Xiaomi device, cloud data availability, Android Health Connect record type and integration path.** Not every metric is guaranteed to appear in every destination.
+
+### Choose your setup
+
+**Android app — for Health Connect users.** Sync Xiaomi cloud data to Health Connect, export records, and access a local MCP endpoint.
+
+**Docker server — for desktop AI and self-hosting.** Collect Xiaomi cloud data into SQLite and expose an authenticated MCP endpoint independently of the phone.
+
+You can use either component separately or combine them. The server does not automatically make its data available to Android apps; Health Connect integration happens on the phone.
+
+### How it works
 
 ```text
-   band / scale ──► Mi Fitness ──► Xiaomi health cloud
-                                        │
-                        ┌───────────────┴────────────────┐
-                   (pull on a schedule)            (sync / backfill)
-                        │                                │
-              ┌─────────▼──────────┐          ┌──────────▼───────────┐
-              │  Server (Docker)   │          │  App (Android)       │
-              │  Python, stdlib    │          │  Kotlin              │
-              │  SQLite per owner  │          │  Health Connect      │
-              └─────────┬──────────┘          └──────────┬───────────┘
-                        │                                │
-              MCP over HTTPS + OAuth 2.1        MCP on 127.0.0.1:8765
-                        │                                │
-        ┌───────────────┴─────────────┐      ┌───────────┴─────────────┐
-        │ Claude, Codex, Cursor, Pi,  │      │ Agents and scripts on   │
-        │ anything that speaks MCP    │      │ the phone (Termux)      │
-        └─────────────────────────────┘      └─────────────────────────┘
+Xiaomi wearable / scale
+          |
+       Mi Fitness
+          |
+    Xiaomi health cloud
+          |
+     +----+------------------+
+     |                       |
+ Android bridge         Docker server
+     |                       |
+ Health Connect         SQLite + MCP
+     |                       |
+ Compatible Android     Desktop AI agents
+ health apps            and other MCP clients
 ```
 
-Two halves, both useful alone, together covering every case: **phone in hand**, **phone offline**, **agent needs an API**.
+### Get started
 
-## What you get
+**Android app** (JDK 17+, Android SDK platform 36):
 
-**The app** — a Kotlin Android app (Health Connect 1.1) that owns the device side:
-
-- Reads Health Connect out to JSON and CSV; writes back what only the cloud has.
-- Runs on a schedule, survives reboots, recovers a stalled vendor sync without you touching anything.
-- Serves an MCP server on `127.0.0.1:8765`, loopback only — 28 tools.
-- Never patches, replaces, or reaches inside Mi Fitness. It doesn't touch the account or the pairing. Both apps write to Health Connect under their own origin, and the vendor's records stay exactly where they are.
-
-**The server** — a Docker service in pure Python (standard library, nothing to install):
-
-- Logs into the cloud with your account, pulls on a schedule, backfills with resume, deduplicates, and stores everything in SQLite, partitioned per account.
-- Serves MCP over HTTPS, so agents keep working when the phone is off.
-- Accepts the reverse direction too: workout and weight data that only exists on the phone can be pushed back in, so both servers describe the same life.
-
-**The admin plane** — one web UI (`admin-ui/`) with two adapters, for the app and for the server, plus a JSON API behind it:
-
-| Layer | Question it answers |
-| --- | --- |
-| **Identity** | Who is calling — a per-agent bearer token, or an OAuth 2.1 access token? |
-| **Tool gate** | May this identity call this tool at all? |
-| **Scope and window** | May it read this metric, in this period? |
-| **Partition** | Whose rows are these? |
-
-Plus an **OAuth 2.1 authorization server** (dynamic client registration, PKCE, refresh, revocation, discovery) so modern MCP clients connect without hand-made keys; **TOTP** on the admin plane, with no shipped default; per-identity rate limits; and a **hash-chained audit log** where every call links to the one before — because an agent's access to your health data should be inspectable, not assumed.
-
-## The API surface
-
-**On the phone (28 tools)** — sync and diagnostics, health queries, maintenance, interop:
-`hc_sync_now` · `hc_backfill` · `hc_dump` · `hc_status` · `hc_logs` · `hc_set_interval` · `hc_upstream` · `hc_kick` · `query_sleep` · `query_sleep_stages` · `query_body_composition` · `query_body_measurements` · `query_metric_series` · `query_heart_rate` · `query_nightly_recovery` · `query_workouts` · `hc_steps_breakdown` · `hc_sleep_raw` · `hc_sleep_extras` · `hc_sleep_gap_check` · `hc_sleep_cleanup` · `hc_sleep_prune` · `hc_sleep_shift` · `hc_sleep_force_import` · `hc_weight_import` · `hc_activity_cleanup` · `hc_export_csv` · `hc_pull_from_server`
-
-**On the server (10 tools)** — the cloud view, read-only towards the device:
-`query_heart_rate` · `query_sleep` · `query_sleep_stages` · `query_body_composition` · `query_metric_series` · `query_stress` · `query_weight` · `query_workouts` · `query_raw` · `ingest`
-
-## Get started
-
-```sh
-# The app (JDK 17+, Android SDK platform 36)
-cd app && ./gradlew assembleDebug
+```bash
+cd app
+./gradlew assembleDebug
 adb install -r build/outputs/apk/debug/app-debug.apk
+```
 
-# The server
-cd deploy/nas && cp env.example .env    # account, secrets, tokens
+Grant the required Health Connect permissions and configure the Xiaomi cloud connection. The phone's local MCP endpoint is `http://127.0.0.1:8765/mcp` (loopback only).
+
+**Optional Docker server:**
+
+```bash
+cd deploy/nas
+cp env.example .env
+# Configure account credentials and authentication secrets in .env
 docker compose up -d
 ```
 
-Then point your MCP client at `http://127.0.0.1:8765/mcp` on the phone, or at your server's `/mcp` with a bearer token or OAuth. First deployment and acceptance: `deploy/nas/install.sh`, `verify.sh`, `ACCEPTANCE.md`.
+See [deployment files](deploy/nas), [operations](OPERATIONS.md), and [acceptance guidance](deploy/nas/ACCEPTANCE.md) for configuration, verification, and troubleshooting. Building and deploying require technical setup; this is not yet a one-tap consumer installation.
 
-## Honest answers
+### Privacy, compatibility and limitations
 
-**Does it break Mi Fitness?** No. It never patches or replaces the app, never reads its private storage, never touches the account or the pairing. When a nudge is needed it only calls services the app already exports — the same thing the system does when you open it.
+- **Unofficial integration:** this project is not affiliated with Xiaomi or Google. Xiaomi cloud endpoints are reverse-engineered and may change without notice.
+- **Sensitive data:** health information is stored in Android Health Connect and/or your own server, depending on what you deploy. Secure server exposure and grant only necessary permissions to agents.
+- **App compatibility:** another app must support and be authorized to read the relevant Health Connect record types; synchronization does not guarantee that every app will display them.
+- **Data quality:** availability, completeness and timestamps depend on upstream records and sync behavior. Check the source before interpreting health trends.
+- **Not a medical device:** outputs are for personal data access, not diagnosis.
 
-**Does it need root?** No. Health Connect permission plus ordinary storage access is enough.
+See [NOTICE.md](NOTICE.md) for third-party and compatibility disclaimers.
 
-**Where does my data go?** Into Health Connect on your phone, and into SQLite on your own server. Nothing else. The app's MCP server binds to loopback only; the server listens where you deploy it.
+### For developers
 
-**Is this official Xiaomi or Google code?** No. The cloud endpoints are reverse-engineered and can break when Xiaomi changes them — see [`NOTICE.md`](NOTICE.md). Only your own account is read.
+The Android component is written in Kotlin and exposes local MCP tools for queries, sync, export and diagnostics. The Docker component provides an independent cloud collector and authenticated MCP API, with an administration interface in [admin-ui/](admin-ui/). Detailed API and deployment information belongs in the [docs/](docs/) and [operations guide](OPERATIONS.md), rather than the product introduction.
 
-**What if I stop using it?** The records are standard Health Connect data. They stay, readable by everything else, exactly as if the vendor app had written them.
-
-## Licence
-
-MIT. Third-party attribution and disclaimers: [`NOTICE.md`](NOTICE.md).
+**License:** [MIT](LICENSE).
 
 ---
 
-# 中文
+## 简体中文
 
-## 你的健康数据是你的，那就让它真属于你。
+### 让小米健康数据，不再局限于一个 App
 
-你戴着手环，你站上体脂秤，你睡八小时 —— 或者四小时。这些数据都进了小米云，然后就停在那儿：只有一个 app 看得见，别的什么都读不到。Google Health 读不到，你的电脑读不到，天天跟你对话的那个 AI Agent 更读不到。
+小米手环、手表和体脂秤记录了大量健康数据，但把它们用于其他 Android 应用、个人分析或 AI 助手并不总是方便。
 
-hc-bridge 就是那扇双向门。
+**Xiaomi Health Connect Bridge** 提供两条路径：将支持的记录同步到 Android **Health Connect**，以及通过 **MCP** 让 AI 助手查询历史健康数据。你还可以选择在自己的服务器上保存和管理数据。
 
-**出去**：小米云端为你账号保存的一切 —— 心率、睡眠、体成分、步数与距离、压力、血氧、运动 —— 全部变成**标准 Health Connect 记录**，字段与元数据按 Android 的要求填。健康 App 看得见，三星健康看得见，Strava 看得见；任何读 Health Connect 的东西看到的都是普通健康数据，和小米自己写的那份并列摆着。
+### 核心能力
 
-**进来**：你怎么问都行。*"这个月我睡得怎么样？""静息心率在变好吗？""哪几周我每天走了一万步以上？"* Agent 从你看到的同一份数据里回答 —— 因为你们读的是同一批记录。
-
-**而且它自己保持最新。** 定时同步、重启自动拉起、厂商 app 停摆时把链路接回去。你不需要为了让它工作而打开它。
-
-## 三个承诺
-
-### 一、小米数据用到底
-
-不是导个半成品，也不是"步数和心率自己想办法"。它覆盖云端账号的整个面：心率、睡眠、体成分、活动、压力、血氧、运动 —— 一套一致的模型，没有需要你手工补的缺口。
-
-### 二、完整融入 Google Health
-
-标准记录、标准元数据、标准来源标识。Health Connect 是那份契约，hc-bridge 完整遵守 —— 所以这些数据不是躺在孤岛里配一个好用的 API，而是住在 Android 期望健康数据住的地方，你的其它应用顺手就继承了。
-
-### 三、MCP 接口真的完整
-
-两个 MCP 服务器、一套数据模型：**手机端 28 个工具**，**服务器端 10 个**。查询、导出、同步、诊断、修复。后面站着真正的权限体系 —— 不是一个塞在配置文件里的 key，然后祈祷。
-
-## 一周的样子
-
-| 时间 | 发生什么 |
+| 功能 | 用户价值 |
 | --- | --- |
-| **周一早上** | Agent 报出昨晚的睡眠和 30 天趋势 —— 直接读 Health Connect 记录，不用截图，不用手工导出。 |
-| **周三** | 你发现健康 App 的步数比手环少。问一句为什么，桥把数字按来源拆开，而不是猜。 |
-| **周五** | 手机在另一个房间、已经关机。桌面上的 agent 照样能答 —— 自托管服务器按自己的节奏从同一朵云取数。 |
-| **周日** | 新装的运动 App 想要你的运动记录。它只需要问 Health Connect，拿到标准记录，当场可用。你什么都没改。 |
+| **同步到 Health Connect** | 让获得授权、兼容相关数据类型的 Android 应用使用小米健康记录 |
+| **连接 AI 助手** | 查询睡眠、心率、活动等历史数据和变化趋势 |
+| **自动同步与历史回补** | 减少手动导出，补齐可获取的历史记录 |
+| **可选 Docker 自托管** | 手机离线时，桌面端 Agent 仍可查询服务器已有的数据 |
+| **细粒度权限控制** | 通过 OAuth、独立权限和审计机制管理 Agent 访问 |
+| **无需 Root** | 不修改官方小米运动健康 App，也不改变设备配对 |
 
-## 它是怎么搭的
+涉及心率、睡眠、活动、体成分、压力、血氧和运动等数据。**实际覆盖范围取决于设备、云端可用数据、Health Connect 支持情况及具体同步路径，不承诺所有指标完整同步。**
+
+### 两种使用方式
+
+**Android App：** 适合希望将小米健康记录同步到 Health Connect 的用户，同时提供本机 MCP 接口。
+
+**Docker Server：** 适合希望在 NAS 或服务器上保存数据、让电脑上的 AI Agent 查询健康历史的用户。
+
+两者可以独立使用，也可以组合部署。服务器中的数据不会仅因为部署了 Docker 就自动出现在手机的 Health Connect 中。
+
+### 工作原理
 
 ```text
-手环 / 体脂秤 ──► 小米运动健康 ──► 小米健康云
-                                      │
-                     ┌────────────────┴────────────────┐
-                （按计划拉取）                    （同步 / 回补）
-                     │                                  │
-           ┌─────────▼──────────┐            ┌──────────▼───────────┐
-           │  Server（Docker）  │            │  App（Android）      │
-           │  Python 纯标准库   │            │  Kotlin              │
-           │  SQLite 按账号分区 │            │  Health Connect      │
-           └─────────┬──────────┘            └──────────┬───────────┘
-                     │                                  │
-           HTTPS + OAuth 2.1                  127.0.0.1:8765
-                     │                                  │
-       ┌─────────────┴────────────┐      ┌──────────────┴─────────────┐
-       │ Claude / Codex / Cursor / │      │ 手机上的 agent 与脚本      │
-       │ Pi，任何会说 MCP 的客户端 │      │ （Termux）                 │
-       └──────────────────────────┘      └────────────────────────────┘
+小米手环 / 手表 / 体脂秤
+           |
+       小米运动健康
+           |
+       小米健康云
+           |
+     +-----+---------------+
+     |                     |
+ Android App          Docker Server
+     |                     |
+ Health Connect       SQLite + MCP
+     |                     |
+ 兼容的 Android App    AI Agent / 脚本
 ```
 
-两半各自单独可用，合起来覆盖全部场景：**手机在手上**、**手机关机**、**agent 要一个 API**。
+### 快速开始
 
-## 你会得到什么
+**Android App**（JDK 17+、Android SDK platform 36）：
 
-**App** —— Kotlin 写的 Android 应用（Health Connect 1.1），掌管设备这一侧：
-
-- 把 Health Connect 读成 JSON 与 CSV，把云端才有的数据写回来。
-- 按计划自转、重启后自己拉起、厂商同步停摆时自己恢复 —— 你不用碰它。
-- 在 `127.0.0.1:8765` 提供 MCP 服务器，只绑回环，28 个工具。
-- 从不 patch、不替换、不深入小米运动健康的内部；不碰账号与设备绑定。两个 app 各以自己的来源标识往 Health Connect 写，小米的记录原样就在那儿。
-
-**Server** —— 纯 Python 标准库写的 Docker 服务，没有依赖要装：
-
-- 用你的账号登录云端，定时拉取、可续跑回补、去重，全部落进按账号分区的 SQLite。
-- 对外提供 HTTPS 上的 MCP，手机关机时 agent 照样工作。
-- 也接受反方向：只存在于手机的运动与体重可以推回来，于是两个服务器描述的是同一份生活。
-
-**管理面** —— 同一套网页后台（`admin-ui/`）两个适配器，App 与 Server 通用，后面是 JSON API：
-
-| 层 | 回答什么问题 |
-| --- | --- |
-| **身份** | 谁在调 —— 每个 agent 一把 Bearer，还是 OAuth 2.1 令牌？ |
-| **工具闸** | 这个身份配不配调这个工具？ |
-| **范围与时间窗** | 能不能读这个指标、这一段时期？ |
-| **分区** | 这些行属于谁？ |
-
-在此之上是完整的 **OAuth 2.1 授权服务器**（动态注册、PKCE、刷新、撤销、发现元数据），现代 MCP 客户端不必手工配 key 就能连；管理面用 **TOTP** 保护，不存在出厂默认；按身份限流；**哈希链审计**让每次调用都链到上一行 —— agent 访问你的健康数据这件事，应该是可查的，不是靠信任。
-
-## 接口清单
-
-**手机端（28 个工具）** —— 同步与诊断、健康查询、维护、互通：
-`hc_sync_now` · `hc_backfill` · `hc_dump` · `hc_status` · `hc_logs` · `hc_set_interval` · `hc_upstream` · `hc_kick` · `query_sleep` · `query_sleep_stages` · `query_body_composition` · `query_body_measurements` · `query_metric_series` · `query_heart_rate` · `query_nightly_recovery` · `query_workouts` · `hc_steps_breakdown` · `hc_sleep_raw` · `hc_sleep_extras` · `hc_sleep_gap_check` · `hc_sleep_cleanup` · `hc_sleep_prune` · `hc_sleep_shift` · `hc_sleep_force_import` · `hc_weight_import` · `hc_activity_cleanup` · `hc_export_csv` · `hc_pull_from_server`
-
-**服务器端（10 个工具）** —— 云端视角，对设备只读：
-`query_heart_rate` · `query_sleep` · `query_sleep_stages` · `query_body_composition` · `query_metric_series` · `query_stress` · `query_weight` · `query_workouts` · `query_raw` · `ingest`
-
-## 五分钟开始
-
-```sh
-# App（JDK 17+，Android SDK platform 36）
-cd app && ./gradlew assembleDebug
+```bash
+cd app
+./gradlew assembleDebug
 adb install -r build/outputs/apk/debug/app-debug.apk
+```
 
-# Server
-cd deploy/nas && cp env.example .env    # 账号、密钥、token
+安装后需配置小米云端连接并授权 Health Connect。手机本机 MCP 地址为 `http://127.0.0.1:8765/mcp`，仅监听本机回环地址。
+
+**可选 Docker 服务：**
+
+```bash
+cd deploy/nas
+cp env.example .env
+# 在 .env 中配置账号和认证密钥
 docker compose up -d
 ```
 
-然后把 MCP 客户端指向手机上的 `http://127.0.0.1:8765/mcp`，或服务器的 `/mcp`（Bearer 或 OAuth）。首次部署与验收：`deploy/nas/install.sh`、`verify.sh`、`ACCEPTANCE.md`。
+详细配置和验证方式见 [部署目录](deploy/nas)、[运维文档](OPERATIONS.md) 与 [验收说明](deploy/nas/ACCEPTANCE.md)。目前仍需要一定的技术配置，并非一键安装的消费级产品。
 
-## 诚实回答
+### 隐私与限制
 
-**会影响小米运动健康吗？** 不会。不 patch、不替换、不读它的私有存储，不碰账号与设备绑定。需要催一下的时候，只调它自己已经导出的服务 —— 和系统打开这个 app 时做的事一样。
+- **非官方项目：** 与小米、Google 无关联。云端接口基于逆向研究，可能因上游改动失效。
+- **数据由你管理：** 根据部署方式，数据存储在手机 Health Connect 和/或自托管服务器中。请妥善保护账号凭据、服务入口及 Agent 权限。
+- **兼容性存在边界：** 第三方应用必须支持相应 Health Connect 记录类型并获得授权，才能读取相关数据。
+- **数据可能不完整：** 设备型号、历史记录、同步时间和数据来源均可能影响结果。
+- **不提供医疗诊断：** 本项目用于个人健康数据访问与分析，不属于医疗器械。
 
-**需要 root 吗？** 不需要。Health Connect 权限加普通存储权限就够了。
+更多说明见 [NOTICE.md](NOTICE.md)。
 
-**我的数据会去哪？** 手机上进 Health Connect，服务器上进你自己的 SQLite。没有别的地方。App 的 MCP 只绑回环；服务器只在你自己部署的地方监听。
+### 开发者信息
 
-**这是小米或 Google 的官方代码吗？** 不是。云端端点是逆向结果，小米改版可能失效 —— 见 [`NOTICE.md`](NOTICE.md)。只读你自己的账号。
+Android 端使用 Kotlin，提供同步、查询、导出和诊断等本机 MCP 能力；Docker 端提供独立的云端数据采集与认证 MCP 接口；管理界面位于 [admin-ui/](admin-ui/)。技术细节见 [docs/](docs/) 和 [OPERATIONS.md](OPERATIONS.md)。
 
-**以后不用了怎么办？** 这些记录就是标准 Health Connect 数据。它们会留在原地，别的应用照样能读，就像小米自己写的一样。
-
-## 许可
-
-MIT。第三方来源与免责声明见 [`NOTICE.md`](NOTICE.md)。
+**开源协议：** [MIT](LICENSE)。
