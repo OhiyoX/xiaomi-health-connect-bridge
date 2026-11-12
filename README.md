@@ -19,6 +19,10 @@ Xiaomi Health Connect Bridge brings your Xiaomi health history into Android Heal
 | **Sync without manual exports** | Background synchronization and historical backfill keep supported records available for analysis. |
 | **Self-host when you want** | An optional Docker deployment provides its own data store and MCP endpoint for desktop agents and server workflows. |
 
+## See it in action
+
+The most useful demo is a real four-step walkthrough: **Mi Fitness stays in place → data appears in Health Connect → an on-device MCP client queries it → you control the client's permissions.** See the [demo and screenshot capture guide](docs/DEMO.md). Screenshots will be published here once captured from a running build.
+
 ## What can you do with it?
 
 **See your health history in more places.** Bring supported sleep and heart-rate records into Health Connect, alongside data from other compatible apps.
@@ -133,6 +137,10 @@ Xiaomi Health Connect Bridge 将小米健康记录同步到 Android Health Conne
 - **用 AI 分析趋势：** 询问「最近两周睡眠时长有什么变化？」「这个月心率趋势如何？」等问题，不必反复手动导出文件。
 - **按客户端授权：** 为不同 AI 客户端分配需要的访问能力，并在管理界面查看授权与访问情况。
 - **按需选择部署方式：** 仅安装 Android App 就能使用 Health Connect 和本机 MCP；需要 NAS 或桌面 Agent 时再部署 Docker。
+
+### 实际演示
+
+推荐的演示流程：**保留小米运动健康 → 同步到 Health Connect → 手机本机 MCP 查询 → 管理客户端权限**。截图和录屏规范见 [Demo 指南](docs/DEMO.md)。真实运行截图完成后再放入首页，避免将 UI 原型当作实机效果。
 
 ### 两种部署方式
 
